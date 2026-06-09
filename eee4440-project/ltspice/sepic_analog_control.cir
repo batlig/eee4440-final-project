@@ -1,0 +1,53 @@
+* ============================================================================
+* EEE4440 - High-Gain SI-C SEPIC : Analog Voltage-Mode Controller (LTspice)
+* ----------------------------------------------------------------------------
+* Realises the controller designed in design/analog_control_design.m
+*   Target: fc = 1 kHz, phase margin 60 deg, Vref = 2.5 V, Vramp = 2.5 Vpp,
+*           fsw = 50 kHz, output 200 V.
+* Stages: (1) output sensing divider, (2) unity-gain buffer,
+*         (3) error amplifier + Type-II compensator (Rf, Cf, Cp),
+*         (4) sawtooth oscillator, (5) PWM comparator -> gate drive.
+* Open this file in LTspice (File > Open) and Run; it is a runnable netlist.
+* The "gate" node is the PWM signal that, through a gate driver (e.g. TC4420),
+* drives the SI-C SEPIC main MOSFET.
+* ============================================================================
+
+.param Vref=2.5 Vramp=2.5 fsw=50k
+
+* ---- supply and reference -------------------------------------------------
+Vcc   vcc  0  5
+Vrf   vref 0  {Vref}
+
+* ---- output sensing -------------------------------------------------------
+* The converter output is modelled here as a source so the controller can be
+* tested stand-alone. A 200->206 V step at t=5 ms exercises the loop and shows
+* the error amplifier / compensator reacting (duty command falls to correct it).
+Vout  vout 0  PWL(0 200  4.999m 200  5m 206  12m 206)
+Rtop  vout fb 787k
+Rbot  fb   0  10k
+
+* ---- unity-gain buffer (presents a low source impedance to R1) ------------
+* Ideal op-amp modelled as a voltage-controlled voltage source (gain 1).
+Ebuf  bufo 0  fb 0  1
+Rbo   bufo vs 10
+
+* ---- error amplifier + Type-II compensator (inverting) --------------------
+*  Gc(s) = -Zf/R1 ,  Zf = (Rf + 1/sCf) || (1/sCp)
+*  -> integrator (Cf,Cp) + zero at 1/(Rf*Cf) ~ 283 Hz + HF pole ~3.5 kHz
+R1    vs  inv 10k
+Rf    inv n1  56.2k
+Cf    n1  vc  10n
+Cp    inv vc  820p
+* high-gain op-amp with 0..Vramp output limit (limit() = clamp)
+Bea   vc 0  V=limit( 1e5*(V(vref)-V(inv)), 0, {Vramp} )
+
+* ---- sawtooth oscillator (0..Vramp at fsw) --------------------------------
+Bsaw  saw 0  V={Vramp}*( time*{fsw} - floor(time*{fsw}) )
+
+* ---- PWM comparator -> gate (0/5 V logic for the gate driver) -------------
+Bcmp  gate 0  V=if( V(vc) > V(saw), 5, 0 )
+
+* ---- analysis -------------------------------------------------------------
+.tran 0 12m 0 100n
+* Probe: V(vc) (control voltage), V(saw), V(gate), V(fb).  Duty = V(vc)/Vramp.
+.end

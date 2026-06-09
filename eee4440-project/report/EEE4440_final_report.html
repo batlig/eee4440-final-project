@@ -1,0 +1,591 @@
+<!doctype html><html lang='en'><head><meta charset='utf-8'><style>
+@page { size: A4; margin: 17mm 16mm; }
+* { box-sizing: border-box; }
+body { font-family: 'Segoe UI', Calibri, Arial, sans-serif; font-size: 10.4pt;
+       line-height: 1.42; color: #141414; }
+/* ---------- cover page ---------- */
+.cover { text-align: center; font-family: Georgia, 'Times New Roman', serif;
+         padding-top: 6mm; }
+.cover .logo { width: 150px; height: auto; margin: 0 auto 13mm; display: block; }
+.cover .univ { font-size: 23pt; font-weight: bold; margin-bottom: 3mm; }
+.cover .fac  { font-size: 13.5pt; }
+.cover .dept { font-size: 13.5pt; margin-bottom: 13mm; }
+.cover .course { font-size: 13.5pt; font-weight: bold; margin-bottom: 12mm; }
+.cover .rsub { font-size: 12pt; font-style: italic; color: #555; margin-bottom: 3mm; }
+.cover .title { font-size: 18.5pt; font-weight: bold; line-height: 1.32;
+                margin: 0 6mm 15mm; }
+.cover .block { margin-bottom: 11mm; }
+.cover .sec-h { font-size: 13pt; font-weight: bold; margin-bottom: 3mm; }
+.cover .member { font-size: 12pt; line-height: 1.7; }
+.cover .instr-title { font-size: 11pt; font-style: italic; color: #444; }
+.cover .date { font-size: 12pt; margin-top: 6mm; }
+/* ---------- body ---------- */
+h1 { font-size: 18pt; text-align: center; margin: 0 0 4pt; }
+h2 { font-size: 13.5pt; border-bottom: 1.5px solid #2a4d7a; color: #1d3a5f;
+     padding-bottom: 2pt; margin: 16pt 0 6pt;
+     page-break-before: always; break-before: page; }
+h3 { font-size: 11.5pt; color: #2a4d7a; margin: 11pt 0 4pt; }
+p  { margin: 5pt 0; text-align: justify; }
+table { border-collapse: collapse; width: 100%; margin: 7pt 0; font-size: 9.6pt; }
+th, td { border: 1px solid #b9bfc7; padding: 3.5pt 6pt; text-align: left; vertical-align: top; }
+th { background: #eef2f7; }
+tr:nth-child(even) td { background: #f7f9fb; }
+img { max-width: 88%; display: block; margin: 8pt auto 2pt; }
+code { font-family: Consolas, monospace; background: #f0f2f4; padding: 0 3px;
+       border-radius: 3px; font-size: 9.4pt; }
+blockquote { border-left: 3px solid #2a4d7a; margin: 7pt 0; padding: 2pt 10pt;
+             background: #f5f7fa; }
+hr { border: 0; border-top: 1px solid #cbd2da; margin: 12pt 0; }
+em { font-style: italic; }
+h2, h3 { page-break-after: avoid; }
+table, img, blockquote { page-break-inside: avoid; }
+/* ---------- references on their own final page, compact ---------- */
+.references { font-size: 9pt; }   /* page break comes from the h2 rule */
+.references h2 { margin-top: 0; }
+.references p { margin: 4pt 0; text-align: left; }
+</style></head><body>
+<section class="cover">
+  <img class="logo" src="figures/bau_logo.png" alt="BAU logo">
+  <div class="univ">Bahçeşehir University</div>
+  <div class="fac">Faculty of Engineering and Natural Sciences</div>
+  <div class="dept">Department of Electrical and Electronics Engineering</div>
+  <div class="course">EEE4440 &mdash; Power Electronics in Energy Systems</div>
+  <div class="rsub">Final Project Report</div>
+  <div class="title">Design and Analysis of a High-Gain Switched Inductor-Capacitor SEPIC Converter for Photovoltaic Applications</div>
+  <div class="block">
+    <div class="sec-h">Group Members</div>
+    <div class='member'>Baran Şakir Atlı &mdash; 2003998</div><div class='member'>Tuğrul Arslan &mdash; 2004060</div><div class='member'>Deniz Bayrak &mdash; 2103588</div><div class='member'>Defne Ceylan &mdash; 2200666</div>
+  </div>
+  <div class="block">
+    <div class="sec-h">Course Instructor</div>
+    <div class="member">Nezihe Küçük Yıldıran</div>
+    <div class="instr-title">Dr. Öğr. Üyesi</div>
+  </div>
+  <div class="date">June 2026</div>
+</section>
+<h2>Abstract</h2>
+<p>This report presents the complete design and analysis of a high-gain, non-isolated <strong>switched inductor-capacitor (SI-C) SEPIC</strong> DC–DC converter intended to interface a single photovoltaic (PV) module to a 200 V DC bus. The converter steps the panel voltage (open-circuit voltage <em>V</em>oc ≈ 40 V) up to <strong>five times <em>V</em>oc (200 V)</strong> while delivering the required <strong>2 A (400 W)</strong> output. The topology, gain relation <em>M</em> = 2(1+D)/(1−D), and the decision to avoid a coupled inductor are grounded in the group's prior literature review of recent (2023–2025) high-gain SEPIC research. The work covers topology justification, full analytical design calculations, a MATLAB/Simulink (Simscape Electrical) simulation for both a PV source and a variable DC source, and a realistic analog PWM control circuit. The simulation confirms the design: from a PV array the converter operates the panel at <strong>99.9 % of its maximum-power point</strong> and delivers a regulated <strong>200.7 V / 2.0 A</strong> output with <strong>0.55 % voltage ripple</strong> at <strong>≈ 90 % efficiency</strong>; the simulated switch voltage stress (133 V) matches the analytical value 2<em>V</em>in/(1−D) and is far below the <em>V</em>in+<em>V</em>o = 234 V of a conventional SEPIC.</p>
+<hr />
+<h2>1. Introduction</h2>
+<p>Photovoltaic modules deliver a low, weather-dependent DC voltage (typically 20–45 V at the maximum-power point for a single module), whereas DC microgrids, storage links and grid-tied inverters require a stable 200–400 V DC bus. A high step-up DC–DC stage is therefore mandatory at the module level.</p>
+<p>The <strong>single-ended primary-inductor converter (SEPIC)</strong> is an attractive interface because it provides (i) non-inverted step-up/step-down operation and (ii) <strong>continuous input current</strong>, which reduces PV-side current ripple and improves the effective utilisation of the panel. However, the classical SEPIC voltage gain <em>V</em>o/<em>V</em>in = D/(1−D) cannot economically reach the 5–6× ratio required here: a 5.9× ratio would demand a duty cycle of D ≈ 0.855, where conduction losses, diode reverse-recovery, and component voltage stress become prohibitive and the real (lossy) gain saturates well below the ideal curve.</p>
+<p>This project therefore designs a <strong>high-gain SEPIC variant</strong> that reaches the required ratio at a moderate duty cycle. The remainder of the report (i) motivates the design from the literature, (ii) justifies the chosen topology, (iii) derives the full analytical design, (iv) validates it in MATLAB/Simulink, and (v) presents a realistic analog control circuit.</p>
+<h3>1.1 Design Requirements and Specifications</h3>
+<table>
+<thead>
+<tr>
+<th>Quantity</th>
+<th>Symbol</th>
+<th>Value</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PV open-circuit voltage</td>
+<td><em>V</em>oc</td>
+<td>40 V</td>
+<td>single 60-cell-format module (~450 W class)</td>
+</tr>
+<tr>
+<td>PV max-power voltage</td>
+<td><em>V</em>mp</td>
+<td>34 V</td>
+<td>nominal full-load input</td>
+</tr>
+<tr>
+<td>PV max-power current</td>
+<td><em>I</em>mp</td>
+<td>13.2 A</td>
+<td></td>
+</tr>
+<tr>
+<td>Output voltage</td>
+<td><em>V</em>out</td>
+<td><strong>200 V</strong></td>
+<td>= 5 × <em>V</em>oc (requirement: 5–6 × <em>V</em>oc)</td>
+</tr>
+<tr>
+<td>Output current</td>
+<td><em>I</em>out</td>
+<td><strong>2 A</strong></td>
+<td>requirement (fixed)</td>
+</tr>
+<tr>
+<td>Output power</td>
+<td><em>P</em>out</td>
+<td>400 W</td>
+<td></td>
+</tr>
+<tr>
+<td>Switching frequency</td>
+<td><em>f</em>sw</td>
+<td>50 kHz</td>
+<td>design choice (Sec. 3.3)</td>
+</tr>
+<tr>
+<td>Target output ripple</td>
+<td>Δ<em>V</em>out</td>
+<td>≤ 1 % (2 V)</td>
+<td>design target</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>2. Literature-Based Design Motivation</h2>
+<p>The group's pre-submission literature review surveyed eight peer-reviewed high-gain SEPIC converters published between 2023 and 2025 [1]–[8], spanning switched-inductor, switched-capacitor / voltage-multiplier, coupled-inductor, quadratic, interleaved and multiport variants. A Gain-to-Component-Ratio (GCR) metric introduced in that review ranked the coupled-inductor design of Abdi et al. [5] highest (GCR ≈ 1.63) and the switched-inductor HGSC of Jayanthi et al. [8] second (GCR ≈ 1.42), and showed that the design space does not converge on a single best topology — <strong>topology choice must follow the application profile.</strong></p>
+<p>For a <em>single low-power PV module</em> feeding a 200 V bus, the dominant priorities are: a moderate duty cycle for efficiency, simple and robust magnetics, low semiconductor stress, and a control loop that is straightforward to implement with analog hardware. Two findings from the review directly shape our design:</p>
+<ul>
+<li>
+<p><strong>Design decision D1 — high gain without a coupled inductor.</strong> Chandra &amp; Gaur [4] demonstrate a switched inductor-capacitor (SI-C) SEPIC that reaches an 11× gain <em>without</em> any coupled inductor or transformer, with an analytical efficiency of 89.83 % versus 82.47 % for a classical SEPIC under matched conditions. Eliminating the coupled inductor removes leakage-inductance turn-off voltage overshoot, simplifies the magnetic design, and reduces the EMI-shielding burden. We adopt this SI-C, non-coupled approach as the backbone of our converter.</p>
+</li>
+<li>
+<p><strong>Design decision D2 — switched-capacitor cells reduce semiconductor voltage stress.</strong> Jayanthi et al. [2] report that an interleaved high-gain modified SEPIC lowers the maximum switch voltage by ≈ 54 % relative to a conventional interleaved boost, and Sumathy et al. [3] show that <em>adding</em> diode-capacitor multiplier cells raises gain <em>without increasing</em> switch voltage stress. We exploit the same principle: the SI-C cell lets us select a lower-voltage, lower-<em>R</em>DS(on) MOSFET than the <em>V</em>in + <em>V</em>out worst-case bound would suggest, improving conduction efficiency.</p>
+</li>
+</ul>
+<p>A third, secondary lesson from Jayanthi et al. [8] — minimising the diode count to limit reverse-recovery losses — informs our component-selection preference for fast SiC Schottky diodes.</p>
+<hr />
+<h2>3. Converter Topology Selection and Justification</h2>
+<h3>3.1 Why SEPIC?</h3>
+<p>Compared with the conventional <strong>boost</strong> converter, the SEPIC offers two decisive advantages for a PV interface:</p>
+<ol>
+<li><strong>Continuous, low-ripple input current</strong> drawn through the input inductor, which a basic boost also has — but the SEPIC additionally provides</li>
+<li><strong>Capacitive input-to-output isolation</strong> through the series energy-transfer capacitor, giving inherent output short-circuit protection and the freedom to step both up and down. This makes a single converter robust across the full PV operating range (from <em>V</em>mp at full sun down to lower voltages under partial shading).</li>
+</ol>
+<h3>3.2 Why a high-gain variant is necessary</h3>
+<p>The required conversion ratio referenced to the operating point is <em>M</em> = <em>V</em>out/<em>V</em>mp = 200/34 ≈ <strong>5.9</strong>. For a classical SEPIC this needs D ≈ 0.855 (Sec. 4.1). At such a duty cycle:</p>
+<ul>
+<li>the switch conducts for 85 % of every period, leaving almost no margin for load or irradiance transients;</li>
+<li>RMS currents, conduction losses and diode reverse-recovery losses rise sharply;</li>
+<li>parasitic resistances cause the <em>real</em> gain to fall far short of the ideal D/(1−D) curve.</li>
+</ul>
+<p>A conventional boost is even worse: its ideal gain 1/(1−D) would also force D ≈ 0.83 and it lacks the SEPIC's input/output decoupling. A <strong>high-gain topology is therefore required</strong> to reach 5–6× at a moderate, efficient duty cycle.</p>
+<h3>3.3 Chosen topology: Switched Inductor-Capacitor (SI-C) SEPIC</h3>
+<p>Following design decisions <strong>D1</strong> and <strong>D2</strong>, we implement the non-coupled SI-C high-gain SEPIC of Chandra &amp; Gaur [4]. Its ideal CCM voltage gain is</p>
+<blockquote>
+<p><strong>M = V_out / V_in = 2(1 + D) / (1 − D)</strong></p>
+</blockquote>
+<p>which delivers the required 5.9× ratio at <strong>D ≈ 0.49</strong> — a moderate duty cycle with comfortable transient headroom, versus D ≈ 0.855 for a classical SEPIC at the same ratio. The converter uses one main MOSFET, three inductors, four capacitors, and four diodes, with no transformer or coupled inductor.</p>
+<p>The circuit (Fig. 1) uses one MOSFET (SW), three inductors (L1, L2 forming the
+switched-inductor cell and the main inductor LM), four diodes (D1, D2 in the cell; Ds, Do
+at the output) and four capacitors (C1 in the cell; the series capacitor C2; the
+energy-transfer capacitor Cs; the output capacitor Co).</p>
+<p><img alt="SI-C SEPIC power stage (Simscape Electrical implementation)" src="figures/circuit_schematic.png" /></p>
+<p><strong>Operating modes (CCM).</strong> When SW is ON, the input charges L1, L2 and C1 in <em>parallel</em>
+(Ds, Do blocked), so <em>V</em>L1 = <em>V</em>L2 = <em>V</em>C1 = <em>V</em>in. When SW is OFF, L1–C1–L2 act in
+<em>series</em> and transfer energy to the output through C2/Do and to Cs through Ds. Applying
+volt-second balance to L1/L2 and to LM gives <em>V</em>CS = 2<em>V</em>in/(1−D) and the static gain
+<strong>M = 2(1+D)/(1−D)</strong> — the relation used throughout the design.</p>
+<p><strong>Design choice — switching frequency.</strong> <em>f</em>sw = 50 kHz is selected as a balance between passive-component size (which scales as 1/<em>f</em>sw) and switching losses at the 400 W power level; it also keeps the gate-drive and analog-PWM design comfortably within the range of standard PWM controller ICs. The reviewed prototypes operate between 21 kHz [8] and 50 kHz [3],[6], confirming 50 kHz as a representative, realisable choice.</p>
+<hr />
+<h2>4. Analytical Design Calculations</h2>
+<p><em>All quantities below are produced by the design script <code>design/sepic_design.m</code> (MATLAB R2025b). CCM operation, ideal switching, and an assumed 92 % efficiency are taken as base assumptions.</em></p>
+<h3>4.1 Duty cycle</h3>
+<p>From <em>M</em> = 2(1+D)/(1−D), solving for D gives D = (M − 2)/(M + 2). At the nominal operating point (<em>V</em>in = <em>V</em>mp = 34 V, <em>V</em>out = 200 V, <em>M</em> = 5.88):</p>
+<ul>
+<li><strong>D = 0.493</strong> (nominal, full load)</li>
+<li>D = 0.429 at light load when the panel voltage rises toward <em>V</em>oc = 40 V → <strong>control range D ≈ 0.43–0.49</strong></li>
+<li>Conventional SEPIC for the same ratio: <strong>D = 0.855</strong> (justifies the high-gain choice)</li>
+</ul>
+<h3>4.2 Currents and power balance</h3>
+<p>With <em>P</em>out = 400 W and η = 92 %, <em>P</em>in = 435 W and the source current is
+<em>I</em>dc = G·<em>I</em>out/η = 12.8 A, below the panel's <em>I</em>mp = 13.2 A — confirming the panel can
+supply the demanded power. The two switched inductors share the input current:
+<em>I</em>L1 = <em>I</em>L2 = <em>I</em>dc/(1+D) ≈ <strong>8.6 A</strong> (peak ≈ 9.7 A); the main inductor carries
+<em>I</em>LM = <em>I</em>out/(1−D) ≈ <strong>3.9 A</strong>. The conservative switch peak current is
+<em>I</em>L1 + <em>I</em>L2 + <em>I</em>LM ≈ <strong>22 A</strong>.</p>
+<h3>4.3 Steady-state node voltages and passive components</h3>
+<p>Exact (ideal) node voltages from the volt-second/charge balance of [4]:
+<em>V</em>C1 = <em>V</em>in = 34 V, <strong>V_CS = 2V_in/(1−D) = 134 V</strong>, <em>V</em>C2 = D·<em>V</em>CS = 66 V,
+<em>V</em>CO = <em>V</em>C2 + <em>V</em>CS = <strong>200 V</strong> (= <em>V</em>out, a consistency check).</p>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Chosen value</th>
+<th>Sizing criterion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>L1 = L2 (switched inductors)</td>
+<td>150 µH</td>
+<td>Δ<em>I</em>L = 30 % of 8.6 A</td>
+</tr>
+<tr>
+<td>LM (main inductor)</td>
+<td>330 µH</td>
+<td>Δ<em>I</em>LM = D·<em>V</em>in/(LM·<em>f</em>sw), 30 %</td>
+</tr>
+<tr>
+<td>C1 (switched-cap)</td>
+<td>47 µF</td>
+<td>Δ<em>V</em>C1 ≤ 5 % of <em>V</em>in (= 34 V)</td>
+</tr>
+<tr>
+<td>C2 (series cap)</td>
+<td>22 µF</td>
+<td>Δ<em>V</em>C2 ≤ 5 % of 66 V</td>
+</tr>
+<tr>
+<td>Cs (energy-transfer)</td>
+<td>10 µF</td>
+<td>Δ<em>V</em>Cs ≤ 5 % of 134 V</td>
+</tr>
+<tr>
+<td>Co (output cap)</td>
+<td>22 µF</td>
+<td>Δ<em>V</em>out ≤ 1 % (2 V)</td>
+</tr>
+</tbody>
+</table>
+<h3>4.4 Semiconductor stresses and component selection</h3>
+<p>The SI-C cell keeps the semiconductor voltage stresses well below the conventional
+<em>V</em>in + <em>V</em>o = 234 V bound (design decision <strong>D2</strong>):</p>
+<table>
+<thead>
+<tr>
+<th>Device</th>
+<th>Voltage stress</th>
+<th>Current</th>
+<th>Selection (30 % derating)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Switch SW</td>
+<td><em>V</em>CS = <strong>134 V</strong></td>
+<td>≈ 22 A peak</td>
+<td>200 V-class low-<em>R</em>DS(on) MOSFET, ≥ 30 A (e.g. IRFB4227 / IPP200N25)</td>
+</tr>
+<tr>
+<td>D1, D2</td>
+<td><em>V</em>in + <em>V</em>C1 = <strong>68 V</strong></td>
+<td>switched-L current</td>
+<td>100 V fast Si/SiC diode</td>
+</tr>
+<tr>
+<td>Ds</td>
+<td><em>V</em>CS = <strong>134 V</strong></td>
+<td>pulsed</td>
+<td>200 V SiC Schottky</td>
+</tr>
+<tr>
+<td>Do</td>
+<td><em>V</em>o − <em>V</em>C2 = <strong>134 V</strong></td>
+<td><em>I</em>avg = 2 A</td>
+<td>200 V SiC Schottky, ≥ 5 A</td>
+</tr>
+</tbody>
+</table>
+<p><strong>SiC Schottky</strong> diodes are chosen for Ds/Do for negligible reverse-recovery loss at
+50 kHz (a lesson carried from [8]); the 200 V rating leaves margin over the 134 V stress.
+The ground-referenced switch needs only a simple low-side gate driver (Sec. 6).</p>
+<hr />
+<h2>5. MATLAB/Simulink Model and Simulation Results</h2>
+<p>The converter was built <strong>programmatically</strong> in MATLAB R2025b using Simscape Electrical
+(Specialized Power Systems). The power stage of Fig. 1 — one MOSFET (<em>R</em>DS(on)=20 mΩ),
+four diodes, three inductors and four capacitors (30 mΩ ESR) — is assembled by the shared
+function <code>add_sic_sepic_stage.m</code>, so the two required cases use an <strong>identical converter</strong>.
+A discrete solver (<em>T</em>s = 50 ns, i.e. 400 points per switching period) is used with a
+<code>powergui</code> block. The MOSFET is driven by a 50 kHz PWM signal.</p>
+<h3>5.1 Case A — PV source (<code>build_sepic_pv.m</code> → <code>sepic_sic_pv.slx</code>)</h3>
+<p>A Simscape Electrical <strong>PV Array</strong> (single user-defined module: <em>V</em>oc=40 V, <em>I</em>sc=13.9 A,
+<em>V</em>mp=34 V, <em>I</em>mp=13.2 A, 72 cells, ~449 W) at 1000 W/m², 25 °C feeds the converter through
+a 100 µF input decoupling capacitor. With the duty fixed at D = 0.513 the system settles at:</p>
+<table>
+<thead>
+<tr>
+<th>Quantity</th>
+<th>Simulated</th>
+<th>Reference</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PV operating voltage</td>
+<td>34.1 V</td>
+<td><em>V</em>mp = 34 V</td>
+</tr>
+<tr>
+<td>PV operating current</td>
+<td>13.1 A</td>
+<td><em>I</em>mp = 13.2 A</td>
+</tr>
+<tr>
+<td><strong>PV power</strong></td>
+<td><strong>448.4 W</strong></td>
+<td><em>P</em>mpp = 449 W → <strong>99.9 % of MPP</strong></td>
+</tr>
+<tr>
+<td>Output voltage</td>
+<td>200.7 V</td>
+<td>200 V target</td>
+</tr>
+<tr>
+<td>Output current</td>
+<td>2.01 A</td>
+<td>2 A</td>
+</tr>
+<tr>
+<td>Output ripple</td>
+<td>1.11 V (0.55 %)</td>
+<td>≤ 1 %</td>
+</tr>
+<tr>
+<td>Conversion efficiency</td>
+<td>89.9 %</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p>Because the converter's reflected input resistance (≈ <em>R</em>load/<em>G</em>² = 2.9 Ω) is close to the
+panel's MPP resistance (<em>V</em>mp/<em>I</em>mp = 2.6 Ω), the operating point sits essentially <strong>at the
+MPP without any explicit MPPT loop</strong>. The PV-fed output rises smoothly to 200 V (Fig. 5a),
+and the PV voltage/power converge to the MPP (Fig. 5b).</p>
+<p><img alt="PV-fed output voltage" src="figures/sim_pv_vout.png" />
+<img alt="PV operating point" src="figures/sim_pv_operating.png" /></p>
+<h3>5.2 Case B — variable DC source (<code>build_sepic_model.m</code> → <code>sepic_sic_dc.slx</code>)</h3>
+<p>Replacing the panel with a controllable DC source (<em>V</em>in = 34 V) and D = 0.513:</p>
+<table>
+<thead>
+<tr>
+<th>Quantity</th>
+<th>Simulated</th>
+<th>Analytical</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Output voltage</td>
+<td>200.7 V</td>
+<td>200 V</td>
+</tr>
+<tr>
+<td>Output ripple Δ<em>V</em>pp</td>
+<td>1.18 V (0.59 %)</td>
+<td>≤ 1 % design target</td>
+</tr>
+<tr>
+<td>Output current</td>
+<td>2.01 A</td>
+<td>2 A</td>
+</tr>
+<tr>
+<td>Input current (avg)</td>
+<td>13.1 A</td>
+<td>12.8 A</td>
+</tr>
+<tr>
+<td>Energy-transfer node <em>V</em>CS</td>
+<td>133.1 V</td>
+<td>134.0 V = 2<em>V</em>in/(1−D)</td>
+</tr>
+<tr>
+<td>Efficiency</td>
+<td>90.2 %</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>Startup (Fig. 2):</strong> the output overshoots to ~320 V at ~1 ms (typical underdamped
+  high-gain startup) and settles to 200 V within ~8 ms.</li>
+<li><strong>Steady-state ripple (Fig. 3):</strong> clean 50 kHz triangular ripple of 1.18 V (0.59 %),
+  below the 1 % target — validating the <em>C</em>o and <em>L</em> sizing.</li>
+<li><strong>Continuous input current (Fig. 4):</strong> the input current never falls to zero (the SEPIC
+  feature that protects the PV), with the characteristic switched-capacitor charging spikes
+  limited by the capacitor ESR.</li>
+<li><strong>Switch voltage (Fig. 6):</strong> the off-state switch voltage plateaus at <strong>133 V ≈ <em>V</em>CS</strong>,
+  confirming the analytical 2<em>V</em>in/(1−D) and the ~43 % stress reduction vs the 234 V
+  (<em>V</em>in+<em>V</em>o) bound of a conventional SEPIC — the basis of design decision <strong>D2</strong>.</li>
+</ul>
+<p><img alt="Output startup" src="figures/sim_vout_startup.png" />
+<img alt="Output ripple" src="figures/sim_vout_ripple.png" />
+<img alt="Continuous input current" src="figures/sim_iin.png" />
+<img alt="Switch voltage stress" src="figures/sim_vsw.png" /></p>
+<h3>5.3 Duty-cycle adjustment (<code>duty_adjustment_demo.m</code>)</h3>
+<p>Sweeping the input voltage (as a panel would vary with irradiance/temperature) and adjusting
+the duty cycle to hold <em>V</em>out = 200 V demonstrates the regulation range required by the
+assignment:</p>
+<table>
+<thead>
+<tr>
+<th><em>V</em>in (V)</th>
+<th>D (ideal)</th>
+<th>D (set)</th>
+<th><em>V</em>out (V)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>40</td>
+<td>0.429</td>
+<td>0.445</td>
+<td>199.5</td>
+</tr>
+<tr>
+<td>37</td>
+<td>0.460</td>
+<td>0.480</td>
+<td>201.1</td>
+</tr>
+<tr>
+<td>34</td>
+<td>0.493</td>
+<td>0.510</td>
+<td>199.3</td>
+</tr>
+<tr>
+<td>31</td>
+<td>0.527</td>
+<td>0.545</td>
+<td>199.3</td>
+</tr>
+<tr>
+<td>28</td>
+<td>0.563</td>
+<td>0.580</td>
+<td>198.3</td>
+</tr>
+</tbody>
+</table>
+<p>As the input falls from 40 V to 28 V the duty cycle rises from 0.445 to 0.580, holding the
+output within ±1 % of 200 V (Fig. 7). The ~0.02 offset between the ideal and the set duty is
+the loss compensation. This duty range (≈ 0.44–0.58) stays well clear of the extreme
+D ≈ 0.86 a conventional SEPIC would need, preserving efficiency and transient headroom.</p>
+<p><img alt="Duty-cycle adjustment" src="figures/sim_duty_adjust.png" /></p>
+<h3>5.4 Analytical vs. simulated cross-check</h3>
+<p>The simulated steady-state node voltages reproduce the analytical design within a few
+percent (<em>V</em>out 200.7 vs 200 V; <em>V</em>CS 133.1 vs 134.0 V; ripple 0.59 % vs the 1 % target), and
+the ~90 % efficiency is consistent with the 89.83 % reported for this topology in [4]. The
+small extra duty needed in simulation (0.513 vs the ideal 0.493) is the expected
+compensation for the conduction/forward-voltage losses of the real device models.</p>
+<hr />
+<h2>6. Analog Control Design</h2>
+<p>A <strong>voltage-mode</strong> analog PWM regulator regulates the output to 200 V. The control
+circuit (designed in <code>design/analog_control_design.m</code>, implemented in
+<code>ltspice/sepic_analog_control.cir</code>) comprises five stages:</p>
+<ol>
+<li><strong>Output sensing</strong> — a resistor divider scales the 200 V output to the 2.5 V
+   reference level (<em>R</em>top = 787 kΩ, <em>R</em>bot = 10 kΩ; divider current ≈ 0.25 mA).</li>
+<li><strong>Unity-gain buffer</strong> — presents a low source impedance to the compensator so its
+   passive values are practical and independent of the high-ratio sense divider.</li>
+<li><strong>Error amplifier + Type-II compensator</strong> — an op-amp compares the sensed output
+   to <em>V</em>ref = 2.5 V; the Type-II network (R1, Rf, Cf, Cp) sets the loop shape.</li>
+<li><strong>Sawtooth oscillator</strong> — a 50 kHz, 2.5 Vpp ramp (an SG3525/UC3525-class PWM IC
+   provides this oscillator, the 5.1 V reference and the error amplifier internally).</li>
+<li><strong>PWM comparator + gate drive</strong> — the comparator output is buffered by a low-side
+   gate driver (e.g. TC4420 / UCC27517); the SI-C SEPIC switch is ground-referenced,
+   so no high-side level shift is needed.</li>
+</ol>
+<h3>6.1 Small-signal model and compensator design</h3>
+<p>The control-to-output behaviour of the converter is approximated by</p>
+<blockquote>
+<p>Gvd(s) = Gdo · (1 − s/ω_z) / (1 + s/ω_p1),  Gdo = <em>V</em>in·4/(1−D)² ≈ 528 V/duty,</p>
+</blockquote>
+<p>with a dominant output pole <em>f</em>p1 = 1/(2π <em>R</em> <em>C</em>o) ≈ 72 Hz and a right-half-plane
+zero <em>f</em>z ≈ <em>R</em>(1−D)²/(2π <em>L</em>M) ≈ 12.4 kHz (boost-derived; it limits the achievable
+bandwidth). With the modulator gain <em>G</em>m = 1/<em>V</em>ramp and sensor gain <em>H</em> = <em>V</em>ref/<em>V</em>out,
+a <strong>Type-II compensator</strong> was designed by the K-factor method for a <strong>1 kHz crossover</strong>
+(safely below the RHP zero and the switched-capacitor resonances) and a <strong>60° phase
+margin</strong>. The achieved loop gain has <strong>PM = 60°, GM = 21.4 dB</strong> (Fig. 8), with a
+compensator zero at 264 Hz and high-frequency pole at 3.79 kHz.</p>
+<p><img alt="Loop-gain Bode plot" src="figures/ctrl_loop_bode.png" /></p>
+<h3>6.2 Component values</h3>
+<table>
+<thead>
+<tr>
+<th>Element</th>
+<th>Value</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><em>R</em>top / <em>R</em>bot</td>
+<td>787 kΩ / 10 kΩ</td>
+<td>output sense divider (→ 2.5 V)</td>
+</tr>
+<tr>
+<td>R1</td>
+<td>10 kΩ</td>
+<td>compensator input resistor</td>
+</tr>
+<tr>
+<td>Rf, Cf</td>
+<td>56.2 kΩ, 10 nF</td>
+<td>compensator zero ≈ 280 Hz</td>
+</tr>
+<tr>
+<td>Cp</td>
+<td>820 pF</td>
+<td>HF pole ≈ 3.5 kHz (noise attenuation)</td>
+</tr>
+<tr>
+<td><em>V</em>ref / <em>V</em>ramp</td>
+<td>2.5 V / 2.5 Vpp</td>
+<td>reference / PWM ramp</td>
+</tr>
+</tbody>
+</table>
+<h3>6.3 Closed-loop verification</h3>
+<p>The designed controller was also implemented in a closed-loop MATLAB/Simulink model
+(<code>build_sepic_closedloop.m</code>) driving the real switching converter, with a soft-start
+and a duty-cycle limit (<em>D</em>max = 0.65) as in a real PWM IC. A <strong>34 → 30 V input step</strong>
+was applied: the loop holds the mean output at ≈ 200 V and adjusts the duty
+(<em>V</em>c rises) to reject the disturbance (Fig. 9), confirming line regulation.</p>
+<p><img alt="Closed-loop input-step rejection" src="figures/sim_closedloop.png" /></p>
+<p>A residual ≈ 2 kHz ripple is visible: the high-gain SI-C SEPIC has lightly-damped
+switched-capacitor/inductor resonances that a single-loop voltage-mode controller does
+not fully damp. The loop-gain analysis (Fig. 8) is therefore the primary design
+verification; in a refined design this ripple would be reduced with an output RC damping
+branch or peak-current-mode control — a point consistent with the literature, where
+several high-gain SEPIC works adopt current-mode or pole-placement control.</p>
+<hr />
+<h2>7. Discussion and Conclusions</h2>
+<p>A complete high-gain SI-C SEPIC was designed and verified for a PV step-up application
+that converts a single ~450 W module (<em>V</em>oc = 40 V, <em>V</em>mp = 34 V) to a regulated 200 V
+(5 × <em>V</em>oc) / 2 A (400 W) bus.</p>
+<p><strong>Design vs. simulation.</strong> The analytical design (G = 2(1+D)/(1−D) → D = 0.493) and the
+Simscape Electrical simulation agree closely: simulated <em>V</em>out = 200.7 V, output ripple
+0.59 % (target ≤ 1 %), <em>V</em>CS = 133 V vs. the analytical 134 V, and ≈ 90 % efficiency,
+consistent with the 89.83 % reported for this topology in [4]. From a real PV array the
+converter self-operates the panel at <strong>99.9 % of its MPP</strong> while delivering 200 V,
+because its reflected input resistance is close to the panel's MPP resistance. The small
+extra duty needed in simulation (≈ 0.51 vs. the ideal 0.49) is the expected
+loss-compensation, and the closed-loop controller supplies it automatically.</p>
+<p><strong>Role of the two literature-supported decisions.</strong> <em>(D1)</em> The non-coupled switched
+inductor-capacitor cell [4] reaches the 5–6× gain with no transformer/coupled inductor;
+the simulation shows clean operation with no turn-off voltage overshoot and a simple
+single-switch gate drive. <em>(D2)</em> The switched-capacitor structure caps the switch
+off-state voltage at <em>V</em>CS = 2<em>V</em>in/(1−D) ≈ 134 V — confirmed by the simulated switch
+waveform — about <strong>43 % below</strong> the <em>V</em>in + <em>V</em>o = 234 V stress of a conventional SEPIC
+[2],[3]; this permits a 200 V-class, low-<em>R</em>DS(on) MOSFET for higher efficiency.</p>
+<p><strong>Why high-gain / vs. boost.</strong> A conventional SEPIC or boost would require D ≈ 0.86 for
+the same ratio, with excessive RMS currents, diode reverse-recovery and stress; the SI-C
+SEPIC achieves it at D ≈ 0.49, with the duty staying in 0.44–0.58 across the 28–40 V
+input range while holding 200 V.</p>
+<p><strong>Limitations and future work.</strong> (i) The PV operating point here is set by the fixed-duty
+input match; a dedicated MPPT loop (P&amp;O / incremental conductance, as in [4],[8]) would
+hold the MPP under irradiance/temperature changes. (ii) The lightly-damped
+switched-capacitor resonances make single-loop voltage-mode control exhibit a residual
+~2 kHz ripple; output RC damping or peak-current-mode control would improve it. (iii) The
+device models are realistic but lumped; a thermal/loss breakdown and a PCB layout would
+be the next steps toward hardware.</p>
+<p><strong>Conclusion.</strong> The project meets every requirement: a justified high-gain SEPIC topology
+grounded in the group's literature review, complete analytical design, a MATLAB/Simulink
+model demonstrating correct output, startup, steady-state and ripple for both a PV source
+and a variable source with duty-cycle adjustment, and a realistic analog Type-II voltage
+controller (verified PM = 60°, GM = 21 dB) with an LTspice implementation. The switched
+inductor-capacitor SEPIC is confirmed as an efficient, low-stress, transformer-less
+solution for interfacing a low-voltage PV module to a 200 V DC bus.</p>
+<hr /><div class='references'><h2>References</h2>
+<p>[1] R. Baladhandapani and M. Arul Prasanna, "High-gain interleaved SEPIC-Cuk converter with modified SBO-SVM MPPT for PMSM-based electric vehicle applications," <em>Electrical Engineering</em>, vol. 107, pp. 11755–11771, 2025, doi: 10.1007/s00202-025-03120-9.</p>
+<p>[2] K. Jayanthi, N. Senthil Kumar, and J. Gnanavadivel, "Interleaved high gain modified SEPIC converter in DC microgrid systems," <em>International Journal of Electronics</em>, vol. 112, no. 5, pp. 929–948, 2025, doi: 10.1080/00207217.2024.2354062.</p>
+<p>[3] P. Sumathy <em>et al.</em>, "Extendable high gain low current/high pulse modified quadratic–SEPIC converter for water treatment applications," <em>Scientific Reports</em>, vol. 14, art. no. 4899, 2024, doi: 10.1038/s41598-024-55708-z.</p>
+<p>[4] S. Chandra and P. Gaur, "An efficient switched inductor–capacitor-based novel non-isolated high gain SEPIC for solar energy applications," <em>International Journal of Circuit Theory and Applications</em>, vol. 51, no. 3, pp. 1286–1312, 2023, doi: 10.1002/cta.3454.</p>
+<p>[5] H. Abdi, M. Shokrani, N. Rostami, and E. Babaei, "Cost-Effective Ultra-High Step-Up SEPIC-Based DC-DC Converter Integrated With Coupled-Inductor for Solar-Powered DC Microgrids," <em>IET Power Electronics</em>, vol. 18, art. no. e70094, 2025, doi: 10.1049/pel2.70094.</p>
+<p>[6] S. M. Taheri, A. Baghramian, and S. A. Pourseyedi, "A Novel High-Step-Up SEPIC-Based Nonisolated Three-Port DC–DC Converter Proper for Renewable Energy Applications," <em>IEEE Transactions on Industrial Electronics</em>, vol. 70, no. 10, pp. 10114–10124, Oct. 2023, doi: 10.1109/TIE.2022.3220909.</p>
+<p>[7] S. Mandal, P. Prabhakaran, D. A. Dominic, and A. P. Parameswaran, "A Transformerless Bidirectional Active Switched Inductor-Based SEPIC High-Gain DC–DC Converter With Buck–Boost Capability," <em>IEEE Access</em>, vol. 13, pp. 137139–137154, 2025, doi: 10.1109/ACCESS.2025.3595442.</p>
+<p>[8] K. Jayanthi <em>et al.</em>, "Analysis of Switched Inductor-Based High Gain SEPIC for Microgrid Systems," <em>International Transactions on Electrical Energy Systems</em>, vol. 2024, art. no. 8591539, 2024, doi: 10.1155/2024/8591539.</p></div></body></html>
